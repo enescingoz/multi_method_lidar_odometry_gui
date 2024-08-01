@@ -11,12 +11,14 @@
 #include <imgui.h>
 #include <implot.h>
 
-namespace viz3d {
+namespace viz3d
+{
 
     /**!
      * @brief An abstract GUIWindow, which groups a set of widgets in a named window
      */
-    class ImGuiWindow {
+    class ImGuiWindow
+    {
     public:
         virtual ~ImGuiWindow() = 0;
 
@@ -39,13 +41,12 @@ namespace viz3d {
 
     typedef std::shared_ptr<ImGuiWindow> GUIWindowPtr;
 
-
     /**!
      * @brief   A GUI composed of a set of windows, built on top of ImGUI, ImPlot and VTK
      */
-    class GUI {
+    class GUI
+    {
     public:
-
         // Singleton GUI instance
         static GUI &Instance(std::string &&window_name = "GUI Window");
 
@@ -53,7 +54,8 @@ namespace viz3d {
         void MainLoop();
 
         // Launches the main loop, for the singleton GUI
-        static void LaunchMainLoop(std::string &&window_name = "GUI Window");;
+        static void LaunchMainLoop(std::string &&window_name = "GUI Window");
+        ;
 
         // Adds a window to the GUI, returns the id of the window
         size_t AddWindow(GUIWindowPtr window);
@@ -74,7 +76,8 @@ namespace viz3d {
     private:
         explicit GUI(std::string &&winname = "GUI Window");
 
-        struct GLFWContext {
+        struct GLFWContext
+        {
             GLFWwindow *window;
             int width = 720;
             int height = 720;
@@ -94,6 +97,19 @@ namespace viz3d {
         static void GLFWResizeCallback(GLFWwindow *, int, int);
     };
 
+    struct TestWindow : ImGuiWindow
+    {
+        TestWindow(std::string &&winname) : ImGuiWindow(std::move(winname)) {}
+
+        void DrawImGUIContent() override
+        {
+            ImGui::Text("This is a Custom Defined ImGui Window !");
+            ImGui::Text(test_string.c_str());
+        }
+
+        std::string test_string;
+    };
+
 } // namespace viz3d
 
-#endif //VIZ3D_UI_H
+#endif // VIZ3D_UI_H

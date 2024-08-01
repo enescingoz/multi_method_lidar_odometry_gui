@@ -1,1 +1,1 @@
-./cmake-build-Release/src/example/example_vtk
+./cmake-build-Release/src/example/main
