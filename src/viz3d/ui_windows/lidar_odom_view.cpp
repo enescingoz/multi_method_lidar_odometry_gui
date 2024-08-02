@@ -1,4 +1,4 @@
-#include <viz3d/ui_windows/trajectory_vis.h>
+#include <viz3d/ui_windows/lidar_odom_view.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -8,14 +8,14 @@
 namespace viz3d
 {
 
-    TrajectoryVis::TrajectoryVis(std::string title)
+    LidarOdomView::LidarOdomView(std::string title)
         : VTKWindow(std::move(title))
     {
         InitializeWindow();
         render_left_panel = true; // Enable left panel rendering
     }
 
-    void TrajectoryVis::RenderLeftPanel()
+    void LidarOdomView::RenderLeftPanel()
     {
         // Configure the left panel using VTKWindow settings
         ConfigureLeftPanel();
@@ -34,12 +34,12 @@ namespace viz3d
         ImGui::End();
     }
 
-    void viz3d::TrajectoryVis::DrawImGUIContent()
+    void viz3d::LidarOdomView::DrawImGUIContent()
     {
         VTKWindow::DrawImGUIContent(); // Call the base class implementation
     }
 
-    void TrajectoryVis::InitializeWindow()
+    void LidarOdomView::InitializeWindow()
     {
         // Initialize the actors
         pointCloudActor = GetPointCloudActor(); // Assume GetPointCloudActor is available

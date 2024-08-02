@@ -10,5 +10,5 @@ VIZ3D_ADD_SRC(
         ${CPP_PREFIX}/ui.cpp ${H_PREFIX}/ui.h
         ${H_PREFIX}/vtk_window.h ${CPP_PREFIX}/vtk_window.cpp
         ${H_PREFIX}/vtk_actors.h ${CPP_PREFIX}/vtk_actors.cpp
-        ${WINDOWS_H_PREFIX}/trajectory_vis.h ${WINDOWS_CPP_PREFIX}/trajectory_vis.cpp
+        ${WINDOWS_H_PREFIX}/lidar_odom_view.h ${WINDOWS_CPP_PREFIX}/lidar_odom_view.cpp
         )

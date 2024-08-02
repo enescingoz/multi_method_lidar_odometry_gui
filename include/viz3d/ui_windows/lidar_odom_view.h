@@ -1,5 +1,5 @@
-#ifndef TRAJECTORY_VIS_H
-#define TRAJECTORY_VIS_H
+#ifndef LIDAR_ODOM_VIEW_H
+#define LIDAR_ODOM_VIEW_H
 
 #include <viz3d/vtk_window.h>
 #include <viz3d/vtk_actors.h>
@@ -8,9 +8,9 @@
 
 namespace viz3d {
 
-class TrajectoryVis : public viz3d::VTKWindow {
+class LidarOdomView : public viz3d::VTKWindow {
 public:
-    TrajectoryVis(std::string title);
+    LidarOdomView(std::string title);
 
     void RenderLeftPanel() override;  // Override the RenderLeftPanel function
     void DrawImGUIContent() override;  // Ensure this function is overridden
@@ -26,4 +26,4 @@ private:
 
 } // namespace viz3d
 
-#endif // TRAJECTORY_VIS_H
+#endif // LIDAR_ODOM_VIEW_H
