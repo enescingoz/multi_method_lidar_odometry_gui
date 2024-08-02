@@ -104,7 +104,7 @@ namespace viz3d
         void DrawImGUIContent() override
         {
             ImGui::Text("This is a Custom Defined ImGui Window !");
-            ImGui::Text(test_string.c_str());
+            ImGui::Text("%s", test_string.c_str());
         }
 
         std::string test_string;

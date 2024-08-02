@@ -15,12 +15,9 @@
 
 namespace viz3d {
 
-
     namespace {
-
         // Sets the color elements of ImGUI components
         void DetDefaultTheme() {
-
             auto &style = ImGui::GetStyle();
 
             style.FrameBorderSize = 1.0;
@@ -67,12 +64,11 @@ namespace viz3d {
         }
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     ImGuiWindow::~ImGuiWindow() = default;
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void ImGuiWindow::Draw() {
-        if (!ImGui::Begin(window_name_.c_str())) {
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+        if (!ImGui::Begin(window_name_.c_str(), nullptr, window_flags)) {
             // Early out if the window is collapsed, as an optimization.
             ImGui::End();
             return;
@@ -81,8 +77,6 @@ namespace viz3d {
         ImGui::End();
     }
 
-
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::ClearWindows() {
         if (!is_initialized_)
             windows_.clear();
@@ -90,7 +84,6 @@ namespace viz3d {
             clear_windows = true;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::MainLoop() {
         // Initialize the GLFW Window and OpenGL context
         CHECK(InitializeGUI()) << "Could not initialize OpenGL Window Context.";
@@ -150,28 +143,23 @@ namespace viz3d {
         glfwContext.window = nullptr;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     size_t GUI::AddWindow(GUIWindowPtr window) {
         size_t window_id = window_id_++;
         windows_[window_id] = window;
         return window_id;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::RemoveWindow(size_t window_id) {
         if (windows_.find(window_id) != windows_.end())
             windows_.erase(window_id);
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::GLFWResizeCallback(GLFWwindow *, int height, int width) {
         auto &instance = GUI::Instance();
         instance.glfwContext.height = height;
         instance.glfwContext.width = width;
     }
 
-
-    /* -------------------------------------------------------------------------------------------------------------- */
     bool GUI::InitializeGUI() {
         if (is_initialized_)
             return true;
@@ -205,20 +193,15 @@ namespace viz3d {
         return true;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     GUI::GUI(std::string &&winname) { glfwContext.window_name = std::move(winname); }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     GUI &GUI::Instance(std::string &&window_name) {
         static GUI window(std::move(window_name));
         return window;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     size_t GUI::window_id_ = 0;
 
-
-    /* -------------------------------------------------------------------------------------------------------------- */
     bool GUI::RenderImGUIFrame(ImGuiIO &io) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -280,7 +263,6 @@ namespace viz3d {
             if (is_initial_layout)
                 ImGui::SetNextWindowDockID(dockspace_id);
             if (window.second)
-
                 window.second->Draw();
         }
         if (is_initial_layout)
@@ -295,17 +277,12 @@ namespace viz3d {
         return true;
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::LaunchMainLoop(std::string &&window_name) {
         Instance(std::move(window_name)).MainLoop();
     }
 
-    /* -------------------------------------------------------------------------------------------------------------- */
     void GUI::SignalClose() {
         remain_open = false;
     }
 
-
 } // namespace viz3d
-
-

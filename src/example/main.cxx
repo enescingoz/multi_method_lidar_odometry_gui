@@ -6,6 +6,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <Eigen/Dense>
 #include <iostream>  // Include for std::cerr
+#include <viz3d/ui_windows/trajectory_vis.h> 
 
 int main(int argc, char **argv) {
     auto &gui = viz3d::GUI::Instance();
@@ -30,6 +31,11 @@ int main(int argc, char **argv) {
         vtk_window3->AddActor(GetPointCloudActor());
         vtk_window3->AddActor(GetLineActor());
         window_id = gui.AddWindow(vtk_window3);
+    }
+
+    {
+        auto trajectory_vis_window = std::make_shared<viz3d::TrajectoryVis>("Trajectory Visualization");
+        window_id = gui.AddWindow(trajectory_vis_window);
     }
 
     std::thread gui_thread{viz3d::GUI::LaunchMainLoop, "GUI"};

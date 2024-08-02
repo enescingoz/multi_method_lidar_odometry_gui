@@ -54,6 +54,10 @@ namespace viz3d {
 
         ~VTKWindow();
 
+
+        
+        bool render_left_panel = false;
+
     protected:
 
         struct ImGuiVars_ {
@@ -67,6 +71,8 @@ namespace viz3d {
         void RenderingPopup();
 
         void BackgroundPopup();
+
+        virtual void RenderLeftPanel();  // New function to render the left panel
 
         struct VTKWindowContext {
             vtkSmartPointer<vtkRenderWindow> render_window = nullptr;

@@ -12,18 +12,22 @@
 #include <vtkPointData.h>
 #include <vtkCollectionIterator.h>
 
-namespace viz3d {
+namespace viz3d
+{
 
-    namespace {
+    namespace
+    {
 
-        void VTKCreateTimerCallback(vtkObject *caller, unsigned long eventId, void *clientData, void *callData) {
+        void VTKCreateTimerCallback(vtkObject *caller, unsigned long eventId, void *clientData, void *callData)
+        {
             // What I am supposed to do ?
             std::cout << "Called " << std::endl;
         }
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::InitializeVTKContext() {
+    void VTKWindow::InitializeVTKContext()
+    {
         assert(!_vtk_context.interactor);
         assert(!_vtk_context.interactor_style);
         assert(!_vtk_context.interactor);
@@ -50,7 +54,7 @@ namespace viz3d {
         render_window->SetSize(_vtk_context.vport_size);
 
         vtkSmartPointer<vtkCallbackCommand> isCurrentCallback =
-                vtkSmartPointer<vtkCallbackCommand>::New();
+            vtkSmartPointer<vtkCallbackCommand>::New();
         isCurrentCallback->SetCallback(VTKIsCurrentCallback);
         render_window->AddObserver(vtkCommand::WindowIsCurrentEvent, isCurrentCallback);
 
@@ -60,7 +64,8 @@ namespace viz3d {
         render_window->AddRenderer(renderer);
         render_window->SetInteractor(interactor);
 
-        for (auto &actor: actors_) {
+        for (auto &actor : actors_)
+        {
             actor->GetProperty()->SetPointSize(imgui_vars_.point_size);
             actor->GetProperty()->SetLineWidth(imgui_vars_.line_width);
             renderer->AddActor(actor);
@@ -77,12 +82,13 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::ProcessEvents() {
+    void VTKWindow::ProcessEvents()
+    {
         if (!ImGui::IsWindowFocused())
             return;
 
         ImGuiIO &io = ImGui::GetIO();
-        (void) io;
+        (void)io;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         ImVec2 wPos = ImGui::GetWindowPos();
         // /!\ There is probably an error : The vtkInteractorStyleMultiTouchCamera moves twice too fast
@@ -95,11 +101,15 @@ namespace viz3d {
         bool dclick = io.MouseDoubleClicked[0] || io.MouseDoubleClicked[1] || io.MouseDoubleClicked[2];
         _vtk_context.interactor->SetEventInformationFlipY(xpos, ypos, ctrl, shift, dclick);
 
-        if (io.MouseClicked[ImGuiMouseButton_Left]) {
+        if (io.MouseClicked[ImGuiMouseButton_Left])
+        {
             _vtk_context.interactor->InvokeEvent(vtkCommand::LeftButtonPressEvent, nullptr);
-        } else if (io.MouseReleased[ImGuiMouseButton_Left]) {
+        }
+        else if (io.MouseReleased[ImGuiMouseButton_Left])
+        {
             _vtk_context.interactor->InvokeEvent(vtkCommand::LeftButtonReleaseEvent, nullptr);
-        } else if (io.MouseClicked[ImGuiMouseButton_Right])
+        }
+        else if (io.MouseClicked[ImGuiMouseButton_Right])
             _vtk_context.interactor->InvokeEvent(vtkCommand::RightButtonPressEvent, nullptr);
         else if (io.MouseReleased[ImGuiMouseButton_Right])
             _vtk_context.interactor->InvokeEvent(vtkCommand::RightButtonReleaseEvent, nullptr);
@@ -113,7 +123,8 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    VTKWindow::~VTKWindow() {
+    VTKWindow::~VTKWindow()
+    {
         _vtk_context.render_window = nullptr;
         _vtk_context.interactor = nullptr;
         _vtk_context.interactor_style = nullptr;
@@ -121,7 +132,8 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::SetVPortSize(int w, int h) {
+    void VTKWindow::SetVPortSize(int w, int h)
+    {
         CHECK(_vtk_context.render_window != nullptr) << "The VTK Window has not been initialized";
 #if VTK_MAJOR_VERSION >= 9
         _vtk_context.render_window->SetShowWindow(_vtk_context.show_window);
@@ -165,15 +177,23 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::DrawImGUIContent() {
-        if (!_vtk_context.is_initialized) {
+    void VTKWindow::DrawImGUIContent()
+    {
+        if (!_vtk_context.is_initialized)
+        {
             LOG(WARNING) << "";
             return;
         }
 
+        if (render_left_panel)
+        {
+            RenderLeftPanel();
+        }
+
         {
             std::lock_guard<std::mutex> lockGuard(actors_management_mutex_);
-            for (auto &actor: actors_to_remove_) {
+            for (auto &actor : actors_to_remove_)
+            {
                 _vtk_context.renderer->RemoveActor(actor);
                 actors_.erase(actor);
                 actors_to_add_.erase(actor);
@@ -183,7 +203,8 @@ namespace viz3d {
 
         {
             std::lock_guard<std::mutex> lockGuard(actors_management_mutex_);
-            for (auto &actor: actors_to_add_) {
+            for (auto &actor : actors_to_add_)
+            {
                 _vtk_context.renderer->AddActor(actor);
                 actors_.insert(actor);
             }
@@ -192,14 +213,14 @@ namespace viz3d {
 
         DrawImGuiWindowConfigurations();
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0., 0.));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::BeginChild("##Viewport", ImVec2(0.f, 0.f), true,
                           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
         DrawVTKWindow();
 
         ProcessEvents();
-        ImGui::Image((void *) _vtk_context.textureId,
+        ImGui::Image((void *)_vtk_context.textureId,
                      ImGui::GetContentRegionAvail(),
                      ImVec2(0, 1), ImVec2(1, 0));
         ImGui::EndChild();
@@ -207,7 +228,8 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::AddActor(vtkSmartPointer<vtkActor> actor) {
+    void VTKWindow::AddActor(vtkSmartPointer<vtkActor> actor)
+    {
         std::lock_guard<std::mutex> lock(actors_management_mutex_);
         actor->GetProperty()->SetPointSize(imgui_vars_.point_size);
         actor->GetProperty()->SetLineWidth(imgui_vars_.line_width);
@@ -215,35 +237,39 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::RemoveActor(vtkSmartPointer<vtkActor> actor) {
+    void VTKWindow::RemoveActor(vtkSmartPointer<vtkActor> actor)
+    {
         std::lock_guard<std::mutex> lock(actors_management_mutex_);
         if (_vtk_context.render_window != nullptr)
             actors_to_remove_.emplace(actor); //< We need to remove the actor from the window
-
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::VTKIsCurrentCallback(vtkObject *caller, unsigned long eventId, void *clientData, void *callData) {
+    void VTKWindow::VTKIsCurrentCallback(vtkObject *caller, unsigned long eventId, void *clientData, void *callData)
+    {
         bool *isCurrent = static_cast<bool *>(callData);
         *isCurrent = true;
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::BackgroundPopup() {
+    void VTKWindow::BackgroundPopup()
+    {
         if (ImGui::Button("Background Color"))
             ImGui::OpenPopup("background_color");
         // Popup to select the Background color
-        if (ImGui::BeginPopup("background_color")) {
+        if (ImGui::BeginPopup("background_color"))
+        {
             ImGui::Text("Background Color:");
             ImGui::Separator();
             ImVec2 button_size = ImVec2(
-                    (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
-                    2 * ImGui::GetFontSize());
+                (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
+                2 * ImGui::GetFontSize());
 
             static float color[3] = {0.f, 0.f, 0.f};
             ImGui::ColorPicker3("Background Color", color);
             ImGui::Separator();
-            if (ImGui::Button("Apply", button_size)) {
+            if (ImGui::Button("Apply", button_size))
+            {
                 _vtk_context.renderer->SetBackground(color[0], color[1], color[2]);
             }
             ImGui::SameLine();
@@ -254,27 +280,32 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::ColorRangePopup() {
+    void VTKWindow::ColorRangePopup()
+    {
         if (ImGui::Button("Color Options"))
             ImGui::OpenPopup("color_options");
 
-        if (ImGui::BeginPopup("color_options")) {
+        if (ImGui::BeginPopup("color_options"))
+        {
             static float scalar_range[2] = {0.f, 1.f};
             ImGui::InputFloat2("Scalar Range", scalar_range);
             ImVec2 button_size = ImVec2(
-                    (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
-                    2 * ImGui::GetFontSize());
+                (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
+                2 * ImGui::GetFontSize());
 
             auto collection = _vtk_context.renderer->GetActors();
 
-            if (ImGui::Button("Set to Min-Max", ImVec2(button_size.x * 2, button_size.y))) {
+            if (ImGui::Button("Set to Min-Max", ImVec2(button_size.x * 2, button_size.y)))
+            {
                 collection->InitTraversal();
                 auto actor = collection->GetNextActor();
                 double min_max[2] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::min()};
                 double actor_min_max[2];
-                while (actor) {
+                while (actor)
+                {
                     auto scalars = actor->GetMapper()->GetInput()->GetPointData()->GetScalars();
-                    if (scalars) {
+                    if (scalars)
+                    {
                         scalars->GetRange(actor_min_max);
                         if (actor_min_max[0] < min_max[0])
                             min_max[0] = float(actor_min_max[0]);
@@ -284,20 +315,24 @@ namespace viz3d {
                     actor = collection->GetNextActor();
                 }
                 if (min_max[0] != std::numeric_limits<float>::max() &&
-                    min_max[1] != std::numeric_limits<float>::min()) {
+                    min_max[1] != std::numeric_limits<float>::min())
+                {
                     collection->InitTraversal();
                     actor = collection->GetNextActor();
-                    while (actor) {
+                    while (actor)
+                    {
                         actor->GetMapper()->SetScalarRange(min_max);
                         actor = collection->GetNextActor();
                     }
                 }
             }
 
-            if (ImGui::Button("Apply", button_size)) {
+            if (ImGui::Button("Apply", button_size))
+            {
                 collection->InitTraversal();
                 auto actor = collection->GetNextActor();
-                while (actor) {
+                while (actor)
+                {
                     actor->GetMapper()->SetScalarRange(scalar_range[0], scalar_range[1]);
                     actor = collection->GetNextActor();
                 }
@@ -310,12 +345,14 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::RenderingPopup() {
+    void VTKWindow::RenderingPopup()
+    {
         // Popup to select
         if (ImGui::Button("Rendering Options"))
             ImGui::OpenPopup("rendering_options");
 
-        if (ImGui::BeginPopup("rendering_options")) {
+        if (ImGui::BeginPopup("rendering_options"))
+        {
             ImGui::Text("Rendering Options:");
             ImGui::Separator();
 
@@ -324,19 +361,23 @@ namespace viz3d {
             ImGui::DragFloat("Line Width", &imgui_vars_.line_width, 0.2f, 1.0f, 20.0f);
 
             ImVec2 button_size = ImVec2(
-                    (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
-                    2 * ImGui::GetFontSize());
-            if (ImGui::Button("Apply", button_size)) {
+                (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x) * 0.5f,
+                2 * ImGui::GetFontSize());
+            if (ImGui::Button("Apply", button_size))
+            {
 
                 _vtk_context.renderer->ReleaseGraphicsResources(_vtk_context.render_window);
                 _vtk_context.renderer->SetRenderWindow(nullptr);
 
-                if (imgui_vars_.with_edl_shader) {
+                if (imgui_vars_.with_edl_shader)
+                {
                     auto basicPasses = vtkSmartPointer<vtkRenderStepsPass>::New();
                     auto edl = vtkSmartPointer<vtkEDLShading>::New();
                     edl->SetDelegatePass(basicPasses);
                     _vtk_context.renderer->SetPass(edl);
-                } else {
+                }
+                else
+                {
                     auto basicPasses = vtkSmartPointer<vtkRenderStepsPass>::New();
                     _vtk_context.renderer->SetPass(basicPasses);
                 }
@@ -344,7 +385,8 @@ namespace viz3d {
                 auto collection = _vtk_context.renderer->GetActors();
                 collection->InitTraversal();
                 auto actor = collection->GetNextActor();
-                while (actor) {
+                while (actor)
+                {
                     actor->GetProperty()->SetPointSize(imgui_vars_.point_size);
                     actor->GetProperty()->SetLineWidth(imgui_vars_.line_width);
                     actor = collection->GetNextActor();
@@ -356,13 +398,21 @@ namespace viz3d {
                 ImGui::CloseCurrentPopup();
             ImGui::EndPopup();
         }
-
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::DrawImGuiWindowConfigurations() {
+
+    void VTKWindow::RenderLeftPanel()
+    {
+        
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+    void VTKWindow::DrawImGuiWindowConfigurations()
+    {
         // Setup the GUI Options
-        if (ImGui::CollapsingHeader("Window Configuration")) {
+        if (ImGui::CollapsingHeader("Window Configuration"))
+        {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0, 4.0));
             BackgroundPopup();
             ImGui::SameLine();
@@ -374,23 +424,25 @@ namespace viz3d {
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::DrawVTKWindow() {
+    void VTKWindow::DrawVTKWindow()
+    {
         SetVPortSize(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _vtk_context.FBOId); // required since we set BlitToCurrent = On.
         _vtk_context.render_window->Render();
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::BeginContext() {
+    void VTKWindow::BeginContext()
+    {
         if (_vtk_context.is_initialized)
             return;
         InitializeVTKContext();
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
-    void VTKWindow::EndContext() {
+    void VTKWindow::EndContext()
+    {
         glDeleteBuffers(1, &_vtk_context.FBOId);
         glDeleteBuffers(1, &_vtk_context.RBOId);
         glDeleteBuffers(1, &_vtk_context.textureId);
@@ -405,6 +457,5 @@ namespace viz3d {
             actors_to_remove_.clear();
         }
     }
-
 
 }
