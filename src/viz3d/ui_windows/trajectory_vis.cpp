@@ -17,16 +17,19 @@ namespace viz3d
 
     void TrajectoryVis::RenderLeftPanel()
     {
+        // Configure the left panel using VTKWindow settings
+        ConfigureLeftPanel();
 
-        // Begin the floating window
-        ImGui::Begin("LeftPanelFloatingWindow");
+        // Begin the floating window with additional flags to make it non-movable and non-resizable
+        ImGui::Begin("LeftPanelWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        // Add a CollapsingHeader to the window
-        if (ImGui::CollapsingHeader("Left Panel", ImGuiTreeNodeFlags_DefaultOpen))
+        // Add new elements to the top of the left panel
+        ImGui::Text("Additional elements at the top");
+        if (ImGui::Button("Additional Button"))
         {
-            ImGui::Text("This is a test text in the left panel.");
-            // Add more UI elements here as needed
+            // Button action
         }
+
 
         ImGui::End();
     }

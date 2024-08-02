@@ -404,7 +404,30 @@ namespace viz3d
 
     void VTKWindow::RenderLeftPanel()
     {
-        
+        if (render_left_panel)
+        {
+            // Configure the left panel
+            ConfigureLeftPanel();
+        }
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+    void VTKWindow::ConfigureLeftPanel()
+    {
+        // Use the position and size of the rendering area
+        ImVec2 rendering_area_pos = ImGui::GetCursorScreenPos();
+        ImVec2 rendering_area_size = ImGui::GetContentRegionAvail();
+
+        // Define padding
+        const float padding_x = 10.0f;
+        const float padding_y = 40.0f;
+
+        // Calculate the position of the left panel with padding
+        ImVec2 left_panel_pos = ImVec2(rendering_area_pos.x + padding_x, rendering_area_pos.y + padding_y);
+        ImGui::SetNextWindowPos(left_panel_pos, ImGuiCond_Always);
+
+        // Set the size of the left panel using the rendering area's height as reference
+        ImGui::SetNextWindowSize(ImVec2(300, rendering_area_size.y - 2 * padding_y), ImGuiCond_Always);
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */

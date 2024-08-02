@@ -73,6 +73,7 @@ namespace viz3d {
         void BackgroundPopup();
 
         virtual void RenderLeftPanel();  // New function to render the left panel
+        void ConfigureLeftPanel();
 
         struct VTKWindowContext {
             vtkSmartPointer<vtkRenderWindow> render_window = nullptr;
