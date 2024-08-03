@@ -1,6 +1,7 @@
 #ifndef LIDAR_ODOM_VIEW_H
 #define LIDAR_ODOM_VIEW_H
 
+#include <lidar_odometry/lidar_odometry.h>
 #include <viz3d/vtk_window.h>
 #include <viz3d/vtk_actors.h>
 #include <vtkSmartPointer.h>
@@ -9,6 +10,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <yaml-cpp/yaml.h>
 #include <string>
+#include <memory>
 #include <portable-file-dialogs.h>
 
 namespace viz3d {
@@ -33,9 +35,18 @@ private:
     // ImGui function to create the folder loading button and textbox
     void ShowLoadFolder();
 
+    // Function to start registration
+    void ShowLidarOdom();
+
+    // Convert lidar odometry parameters to yaml node
+    YAML::Node paramsToYaml() const;
+
     // Private members to store actors or additional settings if needed
     vtkSmartPointer<vtkActor> pointCloudActor;
     vtkSmartPointer<vtkActor> lineActor;
+
+    // LidarOdometry object
+    std::shared_ptr<LidarOdometry> lidar_odometry_;
 
     //
     // Enumeration for registration methods
@@ -70,8 +81,11 @@ private:
     float ndt_res_ = 1.0f;
     int ndt_max_iter_ = 35;
 
+    float leaf_size_ = 0.1;
+
     // Variable to hold the selected folder path
     std::string pcds_folder_;
+
 };
 
 } // namespace viz3d
