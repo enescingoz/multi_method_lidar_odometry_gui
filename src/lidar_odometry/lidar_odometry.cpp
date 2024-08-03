@@ -110,9 +110,6 @@ void LidarOdometry::saveOdometry(const std::string &save_directory)
         return;
     }
 
-    // Create an empty point cloud for the result
-    PointCloudT::Ptr result_cloud(new PointCloudT);
-
     for (const auto &position : odometry_)
     {
         // Extract the translation part from the transformation matrix
@@ -122,6 +119,32 @@ void LidarOdometry::saveOdometry(const std::string &save_directory)
 
         // Write the position to the CSV file
         csv_file << x << "," << y << "," << z << "\n";
+    }
+
+    // Close the CSV file
+    csv_file.close();
+
+    // Generate the point cloud
+    PointCloudT::Ptr result_cloud = generateTrajectoryCloud(odometry_);
+
+    // Save the result point cloud to a PCD file
+    pcl::io::savePCDFileBinary(save_directory + "/odometry.pcd", *result_cloud);
+
+    std::cout << "Odometry saved" << std::endl;
+}
+
+
+PointCloudT::Ptr LidarOdometry::generateTrajectoryCloud(const std::vector<Eigen::Matrix4f> &odometry_)
+{
+    // Create an empty point cloud for the result
+    PointCloudT::Ptr result_cloud(new PointCloudT);
+
+    for (const auto &position : odometry_)
+    {
+        // Extract the translation part from the transformation matrix
+        float x = position(0, 3);
+        float y = position(1, 3);
+        float z = position(2, 3);
 
         // Create a point cloud with a single point for the current position
         PointCloudT::Ptr single_point_cloud(new PointCloudT);
@@ -135,11 +158,5 @@ void LidarOdometry::saveOdometry(const std::string &save_directory)
         *result_cloud += *single_point_cloud;
     }
 
-    // Close the CSV file
-    csv_file.close();
-
-    // Save the result point cloud to a PCD file
-    pcl::io::savePCDFileBinary(save_directory + "/odometry.pcd", *result_cloud);
-
-    std::cout << "Odometry saved" << std::endl;
+    return result_cloud;
 }
