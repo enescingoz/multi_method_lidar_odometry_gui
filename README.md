@@ -1,59 +1,38 @@
-# *viz3d*
+# Multi Method Lidar Odometry with GUI
 
 ![Presentation](doc/example.png)
 
-> *viz3D* is a lightweight C++ GUI library, integrating [Dear ImGUI](https://github.com/ocornut/imgui) (The amazing graphical interface library for C++), [ImPlot](https://github.com/epezent/implot) (Which provides interactive plotting library)
-> and [VTK](https://gitlab.kitware.com/vtk/vtk), the Visualization ToolKit.
->
-
+> **Multi Method Lidar Odometry** is a lightweight Lidar Odometry library based on [viz3d](https://github.com/pierdell/viz3d), a C++ GUI library that integrates [Dear ImGUI](https://github.com/ocornut/imgui), an amazing graphical interface library for C++, [ImPlot](https://github.com/epezent/implot), which provides an interactive plotting library, and [VTK](https://gitlab.kitware.com/vtk/vtk), the Visualization Toolkit.
 
 ## Description
 
-> The library is a simple application layer the singleton `GUI`, which opens a `GLFW` window,
-> and manages a set of user-defined `ImGUIWindow`s.
+> This library is a simple application layer over the singleton `GUI`, which opens a `GLFW` window and manages a set of user-defined `ImGUIWindow`s.
 >
-> We integrate ImGui with the branch `docking`, allowing the creation of multiple viewport and the customization of the layout.
+> A specialized `VTKWindow` extends an `ImGUIWindow` and allows the creation and visualization of multiple VTK pipelines integrated with the ImGui-managed layout of windows. The pipelines are rendered offscreen in a texture and then copied into the available space of the window.
 >
-> A specialized `VTKWindow` extends an `ImGUIWindow`, and allows the creation and visualization of multiple VTK Pipelines integrated with the ImGui managed layout of windows.
-> The pipelines are rendered offscreen in a texture, and then copied in the available space of the window.
+> For lidar odometry, the library integrates PCL's `NDT` and `ICP` methods to generate a lidar trajectory from imported lidar point clouds and saves them as .csv and .pcd files.
 
 ## Installation
 
-> `install.sh` and `install.bat` provide complete installation scripts for Linux and Windows.
-> They first install the external dependencies (VTK, GLFW, and GLAD), then build the project.
-> The install destination is set by default to `./install`.
->
+> `install.sh` and `install.bat` provide complete installation scripts for Linux and Windows. They first install the external dependencies (VTK, GLFW, GLAD, PCL, etc.) and then build the project. The default installation destination is `./install`.
 
 ## Usage
 
-> The `viz3d::GUI` singleton manages a set of `viz3d::GUI::ImGuiWindow`. 
-> Child classes of `viz3d::GUI::ImGuiWindow` must specify in `DrawImGuiContent` the ImGui components
-> to appear on screen.
+> Run the `run.sh` file to initialize the UI.
+>
+> - To run lidar odometry, first select a folder that contains .pcd files of lidar point clouds.
+> - If you have a ROS2 bag file, you can import your PointCloud2 topics as .pcd files using [this script](https://github.com/enescingoz/ros2bag_to_pcd).
+> - After choosing the folder with .pcd files, select your registration method and set the required parameters for that method.
+> - Once you click the `Start` button, your selected registration method will be initialized and a trajectory will be generated and visualized on the UI.
+> - To save the generated trajectory as .csv and .pcd files, click the `Save odometry` button and choose an output path.
+>
+> See `main.cpp` for more details.
 
-```c++
-// std::thread gui_thread {viz3d::GUI::LaunchMainLoop, "GUI"}; //< Launches the GUI in separate different thread
-auto gui = viz3d::GUI::Instance(); //< Initialize the GUI Singleton
-
-gui.AddWindow(std::make_shared<TestWindow>("Test Window")); //< Add a custom ImGui window which specifying the ImGui components to draw 
-
-auto vtk_window = std::make_shared<viz3d::VTKWindow>("VTK Window"); //< Creates a VTKWindow
-vtk_window->AddActor(GetConeActor()); //< Add an actor to the window
-gui.AddWindow(vtk_window); //< Add the window to the GUI
-
-
-gui.MainLoop(); //< Launches the MainLoop 
-// gui_thread.join();
-```
-
-> See `example.cpp` for more details.
-> 
-> The interactor style used for each VTKWindow is the [vtkInteractorStyleMultiTouchCamera]('https://vtk.org/doc/nightly/html/classvtkInteractorStyleMultiTouchCamera.html). 
-> Which works as specified below:
-- `Left Mouse Button Pressed`: Rotates the Camera 
-- `Shift Key` + `Left Mouse Button Pressed`: Translates the camera
+> The interactor style used for each VTKWindow is [vtkInteractorStyleMultiTouchCamera](https://vtk.org/doc/nightly/html/classvtkInteractorStyleMultiTouchCamera.html), which works as specified below:
+- `Left Mouse Button Pressed`: Rotates the camera
+- `Shift Key` + `Left Mouse Button Pressed`: Translates the camera (Pan)
 - `Ctrl Key` + `Left Mouse Button Pressed`: Rotates the camera
 
-![Example](doc/example_2.png)
-
 ## TODO(s)
-- [ ] Add convenient methods to create richer VTK actors
+- [ ] Implement `ICP-N`, `ICP-NL`, and `GICP` registration methods from the PCL library
+- [ ] Show log messages on the UI
