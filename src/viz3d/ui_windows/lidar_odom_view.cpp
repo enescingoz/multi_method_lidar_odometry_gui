@@ -34,13 +34,7 @@ namespace viz3d
 
     void LidarOdomView::InitializeWindow()
     {
-        // Initialize the actors
-        pointCloudActor = GetPointCloudActor(); // Assume GetPointCloudActor is available
-        lineActor = GetLineActor();             // Assume GetLineActor is available
-
-        // Add actors to the window
-        AddActor(pointCloudActor);
-        AddActor(lineActor);
+        
     }
 
     void LidarOdomView::ShowRegistrationDropdown()
@@ -126,6 +120,16 @@ namespace viz3d
                 YAML::Node config = paramsToYaml();
                 lidar_odometry_->setParameters(config);
                 lidar_odometry_->processPointClouds(pcds_folder_);
+
+                // Generate trajectory point cloud
+                PointCloudT::Ptr trajectory_cloud = lidar_odometry_->generateTrajectoryCloud();
+
+                // Create a VTK actor with the trajectory point cloud
+                vtkSmartPointer<vtkActor> actor = CreateActorFromPointCloud(trajectory_cloud);
+
+                // Add the actor to the VTK window
+                RemoveAllActors();
+                AddActor(actor);
             }
 
             if (ImGui::Button("Save Odometry"))

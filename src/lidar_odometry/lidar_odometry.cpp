@@ -69,6 +69,7 @@ void LidarOdometry::processPointClouds(const std::string &path)
 {
     int idx = 0;
     target_cloud_ = PointCloudT::Ptr(new PointCloudT());
+    odometry_.clear();
 
     while (true)
     {
@@ -125,7 +126,7 @@ void LidarOdometry::saveOdometry(const std::string &save_directory)
     csv_file.close();
 
     // Generate the point cloud
-    PointCloudT::Ptr result_cloud = generateTrajectoryCloud(odometry_);
+    PointCloudT::Ptr result_cloud = generateTrajectoryCloud();
 
     // Save the result point cloud to a PCD file
     pcl::io::savePCDFileBinary(save_directory + "/odometry.pcd", *result_cloud);
@@ -134,7 +135,7 @@ void LidarOdometry::saveOdometry(const std::string &save_directory)
 }
 
 
-PointCloudT::Ptr LidarOdometry::generateTrajectoryCloud(const std::vector<Eigen::Matrix4f> &odometry_)
+PointCloudT::Ptr LidarOdometry::generateTrajectoryCloud()
 {
     // Create an empty point cloud for the result
     PointCloudT::Ptr result_cloud(new PointCloudT);

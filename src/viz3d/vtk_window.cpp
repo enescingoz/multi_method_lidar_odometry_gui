@@ -245,6 +245,22 @@ namespace viz3d
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
+    void VTKWindow::RemoveAllActors()
+    {
+        std::lock_guard<std::mutex> lockGuard(actors_management_mutex_);
+        vtkSmartPointer<vtkActorCollection> actors = _vtk_context.renderer->GetActors();
+        actors->InitTraversal();
+        vtkActor *actor = nullptr;
+        while ((actor = actors->GetNextActor()) != nullptr)
+        {
+            _vtk_context.renderer->RemoveActor(actor);
+        }
+        actors_.clear();
+        actors_to_add_.clear();
+        actors_to_remove_.clear();
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
     void VTKWindow::VTKIsCurrentCallback(vtkObject *caller, unsigned long eventId, void *clientData, void *callData)
     {
         bool *isCurrent = static_cast<bool *>(callData);

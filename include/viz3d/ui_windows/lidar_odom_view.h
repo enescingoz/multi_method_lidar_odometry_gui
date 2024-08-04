@@ -8,6 +8,8 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <yaml-cpp/yaml.h>
 #include <string>
 #include <memory>

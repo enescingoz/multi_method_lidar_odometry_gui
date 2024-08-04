@@ -22,7 +22,7 @@ public:
     void processPointClouds(const std::string& path);
     void saveOdometry(const std::string& save_directory);
     void setParameters(const YAML::Node& config);
-    PointCloudT::Ptr generateTrajectoryCloud(const std::vector<Eigen::Matrix4f> &odometry_);
+    PointCloudT::Ptr generateTrajectoryCloud();
 
 
 private:
