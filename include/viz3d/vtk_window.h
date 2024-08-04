@@ -39,6 +39,9 @@ namespace viz3d {
         // Removes a VTK Actor from the window
         void RemoveActor(vtkSmartPointer<vtkActor> actor);
 
+        // Removes all VTK Actors from the window
+        void RemoveAllActors();
+
         // Initializes the VTK Context for the window, must be called before DrawImGUIContent is called
         virtual void InitializeVTKContext();
 

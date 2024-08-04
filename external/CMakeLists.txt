@@ -4,6 +4,7 @@ project(VIZ3D-EXTERNAL)
 option(BUILD_GLOG "Whether to build GLOG from sources" ON)
 option(BUILD_EIGEN "Whether to download EIGEN sources" ON)
 option(BUILD_VTK "Whether to build VTK from sources" ON)
+option(BUILD_PCL "Whether to build PCL from sources" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,7 +13,6 @@ include(ExternalProject)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/global_vars.cmake)
 set(GLOBAL_RUNTIME_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
-
 
 if (BUILD_GLOG)
     # INSTALL GLOG
@@ -111,3 +111,61 @@ if (BUILD_VTK)
 
             BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${CMAKE_BUILD_TYPE} --target install --parallel 6)
 endif ()
+
+
+if (BUILD_PCL)
+    # INSTALL PCL
+    ExternalProject_Add(
+        pcl
+        GIT_REPOSITORY https://github.com/PointCloudLibrary/pcl
+        GIT_TAG pcl-1.14.1
+        BUILD_ALWAYS OFF
+        INSTALL_DIR ${INSTALL_ROOT}/pcl
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}/pcl
+            -DWITH_VTK=OFF
+            -DWITH_OPENGL=OFF
+            -DBUILD_apps=OFF
+            -DBUILD_examples=OFF
+            -DBUILD_common=ON
+            -DBUILD_io=ON
+            -DBUILD_registration=ON
+            -DBUILD_sample_consensus=ON
+            -DBUILD_octree=ON
+            -DBUILD_filters=ON
+            -DBUILD_kdtree=ON
+            -DBUILD_features=OFF
+            -DBUILD_geometry=OFF
+            -DBUILD_segmentation=OFF
+            -DBUILD_visualization=OFF
+            -DBUILD_search=OFF
+            -DBUILD_surface=OFF
+            -DBUILD_keypoints=OFF
+            -DBUILD_people=OFF
+            -DBUILD_outofcore=OFF
+            -DBUILD_simulation=OFF
+            -DBUILD_tracking=OFF
+            -DBUILD_recognition=OFF
+            -DBUILD_stereo=OFF
+            -DBUILD_ml=OFF
+            -DBUILD_tools=OFF
+            -DBUILD_test=OFF
+            -DCMAKE_BUILD_TYPE=Release
+        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${CMAKE_BUILD_TYPE} --target install
+    )
+endif ()
+
+
+# INSTALL YAML-CPP
+ExternalProject_Add(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp
+    GIT_TAG 0.8.0
+    BUILD_ALWAYS OFF
+    INSTALL_DIR ${INSTALL_ROOT}/yaml-cpp
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}/yaml-cpp
+        -DYAML_BUILD_SHARED_LIBS=on
+        -DCMAKE_BUILD_TYPE=Release
+    BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${CMAKE_BUILD_TYPE} --target install
+)

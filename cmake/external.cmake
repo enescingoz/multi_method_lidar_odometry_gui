@@ -18,6 +18,27 @@ if (NOT TARGET Eigen3::Eigen)
 endif ()
 message(INFO "${LOG_PREFIX}Successfully Found Eigen3")
 
+#--  Find PCL
+if (NOT PCL_DIR)
+    set(PCL_DIR ${INSTALL_ROOT}/pcl/share/pcl-1.14/PCLConfig.cmake)
+endif ()
+find_package(PCL)
+message("PCL FOUND: ${PCL_FOUND}")
+if (NOT ${PCL_FOUND})
+    message(FATAL_ERROR "${LOG_PREFIX}Could not find target pcl")
+endif ()
+message(INFO "${LOG_PREFIX}Successfully Found pcl")
+
+#--  Find yaml-cpp
+if (NOT YAML_DIR)
+    set(YAML_DIR ${INSTALL_ROOT}/yaml-cpp/lib/cmake/yaml-cpp)
+endif ()
+find_package(yaml-cpp REQUIRED)
+if (NOT TARGET yaml-cpp)
+    message(FATAL_ERROR "${LOG_PREFIX}Could not find target yaml-cpp")
+endif ()
+message(INFO "${LOG_PREFIX}Successfully Found yaml-cpp")
+
 # -- Color Map
 FetchContent_Declare(
         colormap
@@ -72,6 +93,24 @@ if (NOT implot_POPULATED)
             ${implot_SOURCE_DIR}/implot_items.cpp)
 endif ()
 
+
+# Fetch ImGuiFileDialog dependency
+FetchContent_Declare(
+        portable_file_dialogs
+        GIT_REPOSITORY https://github.com/samhocevar/portable-file-dialogs
+        GIT_TAG main)
+
+
+if (NOT portable_file_dialogs_POPULATED)
+    FetchContent_Populate(portable_file_dialogs)
+
+    set(portable_file_dialogs_HDRS
+            ${portable_file_dialogs_SOURCE_DIR}/portable-file-dialogs.h
+    )
+   
+endif ()
+
+
 # --  Fetch IMGUI dependency (at build time), to compensate for the lack CMakeLists.txt in the project
 FetchContent_Declare(
         imgui
@@ -94,7 +133,9 @@ if (NOT imgui_POPULATED)
             ${_IMGUI_SOURCE_DIR}/imstb_textedit.h
             ${_IMGUI_SOURCE_DIR}/imstb_truetype.h
             ${_IMGUI_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
-            ${IMPLOT_HDRS})
+            ${IMPLOT_HDRS}
+            ${portable_file_dialogs_HDRS}
+            )
 
     set(SOURCES_CXX_FILES
             ${_IMGUI_SOURCE_DIR}/imgui.cpp
@@ -103,7 +144,8 @@ if (NOT imgui_POPULATED)
             ${_IMGUI_SOURCE_DIR}/imgui_tables.cpp
             ${_IMGUI_SOURCE_DIR}/imgui_demo.cpp
             ${_IMGUI_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
-            ${IMPLOT_SRCS})
+            ${IMPLOT_SRCS}
+            )
 
     file(GLOB FONTS_FILES ${FONTS_DIR}/*.ttf)
     set(HEADERS_CXX_IMPL_FILES
@@ -124,6 +166,7 @@ if (NOT imgui_POPULATED)
             ${FONTS_FILES})
     target_include_directories(imgui PUBLIC
             "$<BUILD_INTERFACE:${implot_SOURCE_DIR}>"
+            "$<BUILD_INTERFACE:${portable_file_dialogs_SOURCE_DIR}>"
             "$<BUILD_INTERFACE:${_IMGUI_SOURCE_DIR}>"
             "$<BUILD_INTERFACE:${_IMGUI_SOURCE_DIR}/backends>"
             "$<INSTALL_INTERFACE:include>")
@@ -131,6 +174,9 @@ if (NOT imgui_POPULATED)
     target_link_libraries(imgui PUBLIC OpenGL::GL glfw glad::glad)
     target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 endif ()
+
+
+
 
 
 # --  VTK

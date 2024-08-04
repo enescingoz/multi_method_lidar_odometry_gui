@@ -1,17 +1,62 @@
 #include <viz3d/vtk_actors.h>
-#include <vtkConeSource.h>
-#include <vtkNamedColors.h>
-#include <vtkNew.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
-#include <vtkStructuredPoints.h>
-#include <vtkPointData.h>
-#include <vtkFloatArray.h>
-#include <vtkCellData.h>
-#include <Eigen/Dense>
+
+vtkSmartPointer<vtkActor> CreateActorFromPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud)
+{
+    vtkNew<vtkPolyData> poly_data;
+    int num_points = cloud->points.size();
+
+    // Setup an array of Points
+    vtkNew<vtkPoints> vtk_points;
+    vtk_points->SetDataTypeToFloat();
+    vtk_points->Allocate(num_points);
+    vtk_points->SetNumberOfPoints(num_points);
+    vtk_points->GetData()->SetName("Points_XYZ");
+    poly_data->SetPoints(vtk_points.GetPointer());
+
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        vtk_points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
+    }
+
+    // Assign for each cell vertex indices
+    vtkNew<vtkIdTypeArray> cells;
+    cells->SetNumberOfValues(num_points * 2);
+    vtkIdType *ids = cells->GetPointer(0);
+    for (vtkIdType i = 0; i < num_points; ++i)
+    {
+        ids[i * 2] = 1;     // num points in the cell = 1
+        ids[i * 2 + 1] = i; // pid
+    }
+    vtkSmartPointer<vtkCellArray> cellArray = vtkSmartPointer<vtkCellArray>::New();
+    cellArray->SetCells(num_points, cells.GetPointer());
+    poly_data->SetVerts(cellArray);
+
+    // Construct a Scalar field (to see colors)
+    vtkNew<vtkFloatArray> scalar_values;
+    scalar_values->Allocate(num_points);
+    scalar_values->SetNumberOfTuples(num_points);
+    scalar_values->SetName("Z");
+    poly_data->GetPointData()->AddArray(scalar_values);
+
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        scalar_values->SetValue(i, cloud->points[i].z);
+    }
+
+    poly_data->GetPointData()->SetActiveScalars("Z");
+
+    vtkNew<vtkPolyDataMapper> polydata_mapper;
+    polydata_mapper->SetInputData(poly_data.Get());
+
+    vtkNew<vtkActor> actor;
+    actor->SetMapper(polydata_mapper);
+
+    return actor;
+}
 
 // A Point Cloud Actor (fills the content of a PolyData), with a scalar field
-vtkSmartPointer<vtkActor> GetPointCloudActor() {
+vtkSmartPointer<vtkActor> GetPointCloudActor()
+{
     auto poly_data = vtkSmartPointer<vtkPolyData>::New();
     int num_points_per_primitive = 10000;
     int num_primitives = 3;
@@ -29,8 +74,9 @@ vtkSmartPointer<vtkActor> GetPointCloudActor() {
     vtkNew<vtkIdTypeArray> cells;
     cells->SetNumberOfValues(num_points * 2);
     vtkIdType *ids = cells->GetPointer(0);
-    for (vtkIdType i = 0; i < num_points; ++i) {
-        ids[i * 2] = 1; // num points in the cell = 1
+    for (vtkIdType i = 0; i < num_points; ++i)
+    {
+        ids[i * 2] = 1;     // num points in the cell = 1
         ids[i * 2 + 1] = i; // pid
     }
     vtkSmartPointer<vtkCellArray> cellArray = vtkSmartPointer<vtkCellArray>::New();
@@ -45,13 +91,16 @@ vtkSmartPointer<vtkActor> GetPointCloudActor() {
     poly_data->GetPointData()->AddArray(scalar_values);
 
     // Generate the points randomly from 3 different planes
-    for (auto k(0); k < num_primitives; ++k) {
-        auto generate_point = [k]() {
+    for (auto k(0); k < num_primitives; ++k)
+    {
+        auto generate_point = [k]()
+        {
             Eigen::Vector3f random = Eigen::Vector3f::Random();
             random[k] = 0;
             return random;
         };
-        for (auto i(0); i < num_points_per_primitive; ++i) {
+        for (auto i(0); i < num_points_per_primitive; ++i)
+        {
             Eigen::Vector3f random = generate_point();
             auto idx = k * num_points_per_primitive + i;
             points->SetPoint(idx, random.data());
@@ -69,7 +118,8 @@ vtkSmartPointer<vtkActor> GetPointCloudActor() {
 }
 
 // Generate a Cone Actor
-vtkSmartPointer<vtkActor> GetConeActor() {
+vtkSmartPointer<vtkActor> GetConeActor()
+{
     vtkNew<vtkNamedColors> colors;
     vtkNew<vtkConeSource> cone;
     cone->SetHeight(3.0);
@@ -83,7 +133,8 @@ vtkSmartPointer<vtkActor> GetConeActor() {
 }
 
 // Get Lines Actor
-vtkSmartPointer<vtkActor> GetLineActor() {
+vtkSmartPointer<vtkActor> GetLineActor()
+{
     const auto num_lines = 10;
     const auto num_points = num_lines + 1;
 
@@ -101,10 +152,11 @@ vtkSmartPointer<vtkActor> GetLineActor() {
     auto cell_ids = vtkSmartPointer<vtkIdTypeArray>::New();
     cell_ids->SetNumberOfValues(num_lines * 3);
     vtkIdType *ids = cell_ids->GetPointer(0);
-    for (vtkIdType line_id = 0; line_id < num_lines; ++line_id) {
+    for (vtkIdType line_id = 0; line_id < num_lines; ++line_id)
+    {
         auto cell_id = line_id * 3;
-        ids[cell_id] = 2; // num points in the cell = 2
-        ids[cell_id + 1] = line_id; // origin pid
+        ids[cell_id] = 2;               // num points in the cell = 2
+        ids[cell_id + 1] = line_id;     // origin pid
         ids[cell_id + 2] = line_id + 1; // pid of the endpoint of the line
     }
 
@@ -121,7 +173,8 @@ vtkSmartPointer<vtkActor> GetLineActor() {
     poly_data->GetCellData()->AddArray(color_field);
 
     Eigen::Vector3f previous_point = Eigen::Vector3f::Random() * scale;
-    for (auto line_idx(0); line_idx < num_lines; line_idx++) {
+    for (auto line_idx(0); line_idx < num_lines; line_idx++)
+    {
 
         if (line_idx == 0)
             vtk_points->SetPoint(0, previous_point.data());
